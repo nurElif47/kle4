@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # PHP Service container
+  laravel_frontend_app:
+    build:
+      args:
+        user: laravel_frontend_user
+        uid: 1000
+      context: .
+      dockerfile: Dockerfile
+    image: laravel_frontend_app_image
+    container_name: laravel_frontend_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel-network
+
+  # Nginx Service
+
+  frontend_webserver:
+        platform: linux/amd64
+        image: nginx:alpine
+        container_name: frontend_webserver_container
+        restart: no
+        ports:
+            - "6162:80"
+        depends_on:
+            -   laravel_frontend_app
+        volumes:
+            -   ./:/var/www
+            - ./docker-compose/nginx/:/etc/nginx/conf.d
+        networks:
+            - laravel-network
+
+
+
+networks:
+  laravel-network:
+    driver: bridge
+    external: true
